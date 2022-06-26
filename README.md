@@ -9,8 +9,10 @@ Code supporting our wedding
 
 ### Todo
 
-- Get smtp working
-    - Create an application specific password 
 - Send a test html email
-    - Can I get the basic app running 
+    - Load the image in
+    - Send some test emails to various people
+    - Verify that it's not going ot people's spam folders
 - Send out all the emails
+    - Create a CSV of all the emails
+    - Send them out proplery
