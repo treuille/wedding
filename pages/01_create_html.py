@@ -7,6 +7,8 @@ import base64
 
 
 def get_data_url():
+    raise NotImplementedError("get_data_url")
+
     # Load the image
     image_file = st.file_uploader("Upload Images", type=["png", "jpg", "jpeg"])
     if image_file is None:
