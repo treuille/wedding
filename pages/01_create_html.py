@@ -10,7 +10,8 @@ def get_data_url():
     # Load the image
     image_file = st.file_uploader("Upload Images", type=["png", "jpg", "jpeg"])
     if image_file is None:
-        return
+        image_file = "./adrien-regan-save-the-date.png"
+        st.info("Using default file")
 
     # To View Uploaded Image
     im = Image.open(image_file).convert("RGB")
@@ -30,8 +31,7 @@ def get_data_url():
     with st.expander("Show details"):
         st.write(
             {
-                "filename": image_file.name,
-                "filetype": image_file.type,
+                "filename": getattr(image_file, "name", image_file),
                 "mode": im.mode,
                 "width": im.width,
                 "height": im.height,
