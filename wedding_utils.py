@@ -9,7 +9,7 @@ _INVITE_TEXT = textwrap.dedent(
     """
     Save the date. Oct 15, 2022. Regan and Adrien.
     The Land, Santa Cruz Mountains, California.
-    We would be honored to see you there.
+    We would be so excited to see you.
     """
 )
 
@@ -51,7 +51,7 @@ class WeddingException(Exception):
 
 def get_email_text() -> str:
     """Get email text to send."""
-    raise WeddingException("testing get_email_text")
+    return st.session_state.invite_text
 
 
 def _to_css_str(css_attrs):
@@ -63,13 +63,6 @@ def get_email_html() -> str:
     data_url, img_width, _ = get_img_data()
     border_size = 20
 
-    body_style = {
-        "padding": "0px",
-        "spacing": "0px",
-        "margin": "0px",
-        "background-color": "black",
-    }
-
     table_style = {
         "border": "0px black",
         "padding": "0px",
@@ -79,25 +72,34 @@ def get_email_html() -> str:
     }
 
     tr_style = {
+        "border": "0px black",
         "padding": "0px",
         "spacing": "0px",
         "margin": "0px",
     }
 
     td_style = {
-        # "padding": "0px",
+        "border": "0px black",
         "padding": f"{border_size}px",
         "spacing": "0px",
         "margin": "0px",
         "background-color": "black",
+        "color": "#444444",
+        "font-family": "Sans-Serif",
+        "text-align": "center",
     }
 
     img_style = {
+        "border": "0px black",
         "width": f"100%",
         "max-width": f"{img_width}px",
         "display": "block",
         "margin": "0 auto",
     }
+
+    body_text = "\n".join(
+        f"<div>{s}.</div>" for s in st.session_state.invite_text.split(".")
+    )
 
     return textwrap.dedent(
         f"""
@@ -111,10 +113,6 @@ def get_email_html() -> str:
 
                         style="{_to_css_str(img_style)}"
                     >
-                </td>
-            </tr>
-            <tr>
-                <td>
                     {st.session_state.invite_text}
                 </td>
             </tr>
