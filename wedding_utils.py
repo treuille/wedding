@@ -1,12 +1,22 @@
+import textwrap
 import streamlit as st
 from PIL import Image
 from io import BytesIO
 import base64
 from typing import Literal, Tuple
 
+_INVITE_TEXT = textwrap.dedent(
+    """
+    Save the date. Oct 15, 2022. Regan and Adrien.
+    The Land, Santa Cruz Mountains, California.
+    We would be honored to see you there.
+    """
+)
+
 _DEFAULT_STATE = {
     "image_file": "./adrien-regan-save-the-date.png",
     "image_format": "jpeg",
+    "invite_text": _INVITE_TEXT,
 }
 
 
@@ -44,9 +54,73 @@ def get_email_text() -> str:
     raise WeddingException("testing get_email_text")
 
 
+def _to_css_str(css_attrs):
+    return ";".join(f"{k}:{v}" for k, v in css_attrs.items())
+
+
 def get_email_html() -> str:
     """Get the email html."""
-    raise WeddingException("testing get_email_html")
+    data_url, img_width, _ = get_img_data()
+    border_size = 20
+
+    body_style = {
+        "padding": "0px",
+        "spacing": "0px",
+        "margin": "0px",
+        "background-color": "black",
+    }
+
+    table_style = {
+        "border": "0px black",
+        "padding": "0px",
+        "spacing": "0px",
+        "margin": "0px",
+        "width": "100%",
+    }
+
+    tr_style = {
+        "padding": "0px",
+        "spacing": "0px",
+        "margin": "0px",
+    }
+
+    td_style = {
+        # "padding": "0px",
+        "padding": f"{border_size}px",
+        "spacing": "0px",
+        "margin": "0px",
+        "background-color": "black",
+    }
+
+    img_style = {
+        "width": f"100%",
+        "max-width": f"{img_width}px",
+        "display": "block",
+        "margin": "0 auto",
+    }
+
+    return textwrap.dedent(
+        f"""
+        <table style="{_to_css_str(table_style)}"
+            <tr style="{_to_css_str(tr_style)}">
+                <td style="{_to_css_str(td_style)}">
+                    <img 
+                        src="{data_url}" 
+
+                        alt="{st.session_state.invite_text}"
+
+                        style="{_to_css_str(img_style)}"
+                    >
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    {st.session_state.invite_text}
+                </td>
+            </tr>
+        </table>
+        """
+    )
 
 
 @st.experimental_memo  # type: ignore

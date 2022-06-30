@@ -1,6 +1,6 @@
-import textwrap
 import streamlit as st
-import streamlit.components.v1 as components
+
+import wedding_utils
 
 
 def get_data_url():
@@ -47,82 +47,6 @@ def get_data_url():
     return data_url, im.width
 
 
-def to_css_str(css_attrs):
-    return ";".join(f"{k}:{v}" for k, v in css_attrs.items())
-
-
-def create_email(data_url, img_width):
-    """Creates an email based on the image width."""
-    st.write("### Create email")
-    border_size = st.slider("Border size", 0, 200, 20)
-    body_style = {
-        "padding": "0px",
-        "spacing": "0px",
-        "margin": "0px",
-        "background-color": "black",
-    }
-
-    table_style = {
-        "border": "0px black",
-        "padding": "0px",
-        "spacing": "0px",
-        "margin": "0px",
-        "width": "100%",
-    }
-
-    tr_style = {
-        "padding": "0px",
-        "spacing": "0px",
-        "margin": "0px",
-    }
-
-    td_style = {
-        # "padding": "0px",
-        "padding": f"{border_size}px",
-        "spacing": "0px",
-        "margin": "0px",
-        "background-color": "black",
-    }
-
-    img_style = {
-        "width": f"100%",
-        "max-width": f"{img_width}px",
-        "display": "block",
-        "margin": "0 auto",
-    }
-
-    html = textwrap.dedent(
-        f"""
-        <html>
-            <head></head>
-            <body style="{to_css_str(body_style)}">
-                <table style="{to_css_str(table_style)}"
-                    <tr style="{to_css_str(tr_style)}">
-                        <td style="{to_css_str(td_style)}">
-                            <img 
-                                src="{data_url}" 
-
-                                alt="Save the date. Oct 15, 2022. Regan and
-                                Adrien. The Land, Santa Cruz Mountains, California." 
-
-                                style="{to_css_str(img_style)}"
-                            >
-                        </td>
-                    </tr>
-                </table>
-            </body>
-        </html>
-    """
-    )
-    components.html(html, height=3000)
-    if st.button("Save HTML"):
-        with open("email.html", "w") as output:
-            output.write(html)
-            st.success(f"Wrote {output.name}")
-    # st.write("data_url", type(data_url), len(data_url))
-    # st.write("img_width", type(img_width), img_width)
-
-
 def main():
     st.subheader("Image")
     data_url, img_width = get_data_url()
@@ -130,4 +54,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    st.write(wedding_utils)
+    wedding_utils.run_main(main)
