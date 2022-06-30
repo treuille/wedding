@@ -6,25 +6,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 
-class WeddingException(Exception):
-    def __init__(self, msg: str):
-        self.msg = msg
-
-    @classmethod
-    def run_main(cls, func):
-        """Runs a function, extracting WeddingExceptions
-        and displaying them specially."""
-        try:
-            func()
-        except cls as wedding_exception:
-            st.error(wedding_exception.msg)
-
-    @classmethod
-    def assertion(cls, condition: bool, msg: str):
-        if not condition:
-            raise cls(msg)
-
-
 def get_google_credentials():
     """Get the username and password."""
     username = st.sidebar.text_input("Username", "adrien.g.treuille@gmail.com")
