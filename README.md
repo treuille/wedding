@@ -11,6 +11,12 @@ Code supporting our wedding
 
 - New architecture
     - Parameters are stored in the sesso
+    - Get each files to work in succession
+        - `./wedding_utils.py`
+        - `./pages/03_test.py`
+        - `./pages/02_send_emails.py`
+        - `./pages/01_create_html.py`
+        - `./wedding.py`
 - Send a test html email
     - Load the image in
     - Send the email to that test email website

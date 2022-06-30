@@ -1,4 +1,30 @@
 import streamlit as st
+from PIL import Image
+from io import BytesIO
+import base64
+from typing import Literal, Tuple
+
+_DEFAULT_STATE = {
+    "image_file": "./adrien-regan-save-the-date.png",
+    "image_format": "jpeg",
+}
+
+
+def init_session_state():
+    """Initializes the session state with default values."""
+    for k, v in _DEFAULT_STATE.items():
+        if k not in st.session_state:
+            st.session_state[k] = v
+
+
+def run_main(func):
+    """Runs a function, extracting WeddingExceptions
+    and displaying them specially."""
+    try:
+        init_session_state()
+        func()
+    except WeddingException as wedding_exception:
+        st.error(wedding_exception.msg)
 
 
 class WeddingException(Exception):
@@ -13,68 +39,37 @@ class WeddingException(Exception):
             raise cls(msg)
 
 
-def run_main(func):
-    """Runs a function, extracting WeddingExceptions
-    and displaying them specially."""
-    try:
-        init_session_state()
-        func()
-    except WeddingException as wedding_exception:
-        st.error(wedding_exception.msg)
-
-
-def init_session_state():
-    """Initializes the session state with default values."""
-    pass
-
-
 def get_email_text() -> str:
     """Get email text to send."""
-    return "testing get_email_text"
+    raise WeddingException("testing get_email_text")
 
 
 def get_email_html() -> str:
     """Get the email html."""
-    return "testing get_email_html"
+    raise WeddingException("testing get_email_html")
 
 
-def get_data_url():
-    # Load the image
-    image_file = st.file_uploader("Upload Images", type=["png", "jpg", "jpeg"])
-    if image_file is None:
-        image_file = "./adrien-regan-save-the-date.png"
-        st.info("Using default file")
-
-    # To View Uploaded Image
+@st.experimental_memo  # type: ignore
+def _get_image_base_64(
+    image_file, image_format: Literal["jpeg", "png"]
+) -> Tuple[str, int, int]:
+    """Gets the image data along with the image width and height."""
+    # Open the image and convert it ot image_format
     im = Image.open(image_file).convert("RGB")
-
-    # You first need to save the image again in JPEG format; using the im.tostring() method would otherwise return raw image data that no browser would recognize:
-    image_format = st.selectbox("Image format", ["jpeg", "png"])
     output = BytesIO()
     im.save(output, format=image_format)
     im_data = output.getvalue()
 
-    # This you can then encode to base64:
+    # Encode hte image to base64
     image_data = base64.b64encode(im_data).decode()
     data_url = f"data:image/{image_format};base64,{image_data}"
-    st.metric("Encoded size", f"{len(data_url):,} bytes")
 
-    # Show some details of the conversion
-    with st.expander("Show details"):
-        st.write(
-            {
-                "filename": getattr(image_file, "name", image_file),
-                "mode": im.mode,
-                "width": im.width,
-                "height": im.height,
-                "encoded_size": len(data_url),
-            }
-        )
+    # All done
+    return data_url, im.width, im.height
 
-    # Show a preview of the image
-    with st.expander("Show image preview"):
-        preview_width = st.slider("Width", 200, im.width, 300)
-        st.image(im, width=preview_width)
-        st.write(type(im))
 
-    return data_url, im.width
+def get_img_data() -> Tuple[str, int, int]:
+    """Returns data_url, width, height."""
+    return _get_image_base_64(
+        st.session_state.image_file, st.session_state.image_format
+    )

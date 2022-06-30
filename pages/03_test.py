@@ -1,13 +1,16 @@
 import wedding_utils
-from wedding_utils import WeddingException
 import streamlit as st
+
+# from wedding_utils import WeddingException
 
 
 def main():
     st.title("Scratchpad")
-    data_url = wedding_utils.get_data_url()
+    data_url, width, height = wedding_utils.get_img_data()
     st.write("Data URL len:", len(data_url))
     st.code(data_url[:100])
+    st.experimental_show(width)
+    st.experimental_show(height)
 
 
 if __name__ == "__main__":
