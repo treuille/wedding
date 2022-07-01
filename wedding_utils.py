@@ -1,11 +1,12 @@
 import textwrap
-from types import FunctionType
 import streamlit as st
 from PIL import Image
 from io import BytesIO
 import base64
-from typing import Literal, Tuple, Callable, Any
+from typing import Literal, Tuple
 import copy
+import functools
+import inspect
 
 _INVITE_TEXT = textwrap.dedent(
     """
@@ -14,6 +15,7 @@ _INVITE_TEXT = textwrap.dedent(
     We would be so excited to see you.
     """
 )
+
 _DEFAULT_STATE = {
     "image_file": "./adrien-regan-save-the-date.png",
     "image_format": "jpeg",
@@ -35,13 +37,41 @@ def reset_state():
     state.update(_DEFAULT_STATE)
 
 
-def set_state(key: str) -> Callable[[], None]:
-    def setter():
-        st.write(f"setter: `{key}`")
-        st.write(f"setter new_state: `{st.session_state[key]}`")
-        get_state()[key] = st.session_state[key]
+def _create_widget(widget):
+    """Creates a stateful widget that saves it's state according to my new system."""
 
-    return setter
+    @functools.wraps(widget)
+    def wrapped_widget(*args, **kwargs):
+        key = kwargs["key"]
+
+        def state_setter():
+            st.write(f"setter: `{key}`")
+            st.write(f"setter new_state: `{st.session_state[key]}`")
+            get_state()[key] = st.session_state[key]
+
+        new_kwargs = {
+            **kwargs,
+            "key": key,
+            "on_change": state_setter,
+        }
+        named_parameters = inspect.signature(widget).parameters.keys()
+        if "value" in named_parameters:
+            new_kwargs["value"] = get_state()[key]
+        elif {"index", "options"} < named_parameters:
+            index = kwargs["options"].index(get_state()[key])
+            # st.write(
+            #     f"`{key}` -> `{get_state()[key]}` (options=`{kwargs['options']}` index=`{index}`)"
+            # )
+            new_kwargs["index"] = index
+        else:
+            raise RuntimeError(f"Unable to set default value for {widget}.")
+        widget(*args, **new_kwargs)
+
+    return wrapped_widget
+
+
+selectbox = _create_widget(st.selectbox)
+multiselect = _create_widget(st.multiselect)
 
 
 def run_main(func):

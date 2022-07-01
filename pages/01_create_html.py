@@ -5,11 +5,10 @@ import wedding_utils
 
 def main():
     st.expander("Show help").help(st.selectbox)
-    st.selectbox(
+    wedding_utils.selectbox(
         "Image format",
         options=["png", "jpeg"],
         key="image_format",
-        on_change=wedding_utils.set_state("image_format"),
     )
 
 
