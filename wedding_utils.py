@@ -1,9 +1,11 @@
 import textwrap
+from types import FunctionType
 import streamlit as st
 from PIL import Image
 from io import BytesIO
 import base64
-from typing import Literal, Tuple
+from typing import Literal, Tuple, Callable, Any
+import copy
 
 _INVITE_TEXT = textwrap.dedent(
     """
@@ -12,7 +14,6 @@ _INVITE_TEXT = textwrap.dedent(
     We would be so excited to see you.
     """
 )
-
 _DEFAULT_STATE = {
     "image_file": "./adrien-regan-save-the-date.png",
     "image_format": "jpeg",
@@ -22,22 +23,33 @@ _DEFAULT_STATE = {
 }
 
 
-def init_session_state():
-    """Initializes the session state with default values."""
-    with st.expander("Before init_session_state"):
-        st.json(st.session_state)
-    for k, v in _DEFAULT_STATE.items():
-        if k not in st.session_state:
-            st.session_state[k] = v
-    with st.expander("After init_session_state"):
-        st.json(st.session_state)
+@st.experimental_singleton  # type: ignore
+def get_state():
+    return copy.deepcopy(_DEFAULT_STATE)
+
+
+def reset_state():
+    """Reset the state to blank."""
+    state = get_state()
+    state.clear()
+    state.update(_DEFAULT_STATE)
+
+
+def set_state(key: str) -> Callable[[], None]:
+    def setter():
+        st.write(f"setter: `{key}`")
+        st.write(f"setter new_state: `{st.session_state[key]}`")
+        get_state()[key] = st.session_state[key]
+
+    return setter
 
 
 def run_main(func):
     """Runs a function, extracting WeddingExceptions
     and displaying them specially."""
     try:
-        init_session_state()
+        with st.expander("Show state"):
+            st.json(get_state())
         func()
     except WeddingException as wedding_exception:
         st.error(wedding_exception.msg)
@@ -57,7 +69,7 @@ class WeddingException(Exception):
 
 def get_email_text() -> str:
     """Get email text to send."""
-    return st.session_state.invite_text
+    return get_state()["invite_text"]
 
 
 def _to_css_str(css_attrs):
@@ -103,9 +115,7 @@ def get_email_html() -> str:
         "margin": "0 auto",
     }
 
-    body_text = "\n".join(
-        f"<div>{s}.</div>" for s in st.session_state.invite_text.split(".")
-    )
+    invite_text = get_state()["invite_text"]
 
     return textwrap.dedent(
         f"""
@@ -115,11 +125,11 @@ def get_email_html() -> str:
                     <img 
                         src="{data_url}" 
 
-                        alt="{st.session_state.invite_text}"
+                        alt="{invite_text}"
 
                         style="{_to_css_str(img_style)}"
                     >
-                    {st.session_state.invite_text}
+                    {invite_text}
                 </td>
             </tr>
         </table>
@@ -152,8 +162,8 @@ def _get_image_base_64(
 
 def get_img_data() -> Tuple[str, int, int]:
     """Returns data_url, width, height."""
-    desired_width = st.session_state.image_width
+    image_file = get_state()["image_file"]
+    image_format = get_state()["image_format"]
+    desired_width = get_state()["image_width"]
 
-    return _get_image_base_64(
-        st.session_state.image_file, st.session_state.image_format, desired_width
-    )
+    return _get_image_base_64(image_file, image_format, desired_width)

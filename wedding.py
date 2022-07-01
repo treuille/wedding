@@ -21,8 +21,10 @@ def main():
     with st.expander("Show email text"):
         st.code(email_text)
 
-    if st.checkbox("Show email preview"):
-        components.html(email_html, height=2000)
+    if st.checkbox("Show html"):
+        components.html(email_html, height=1000)
+
+    st.button("Reset state", on_click=wedding_utils.reset_state)
 
 
 if __name__ == "__main__":

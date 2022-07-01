@@ -5,11 +5,12 @@ import wedding_utils
 
 def main():
     st.expander("Show help").help(st.selectbox)
-    st.write(st.session_state)
-    st.selectbox("Image format", options=["png", "jpeg"], key="image_format")
-    st.write(st.session_state)
-    # "invite_text": _INVITE_TEXT,
-    # "image_width": 1400,
+    st.selectbox(
+        "Image format",
+        options=["png", "jpeg"],
+        key="image_format",
+        on_change=wedding_utils.set_state("image_format"),
+    )
 
 
 if __name__ == "__main__":
