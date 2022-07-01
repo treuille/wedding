@@ -4,6 +4,8 @@ from contextlib import contextmanager
 import re
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import wedding_utils
+from wedding_utils import WeddingException
 
 
 def get_google_credentials():
@@ -46,43 +48,46 @@ def main():
     recipient = st.text_input("To")
     is_valid = valid_email(recipient)
     WeddingException.assertion(is_valid, "Please enter a valid recipient email.")
-    message = st.text_area("Message")
-    WeddingException.assertion(message, "Please enter a message.")
+
+    subject = st.text_input("Subject", key="subject")
+    WeddingException.assertion(subject, "Subject cannot be empty")
+
+    text_content = MIMEText(wedding_utils.get_email_text(), "plain")
+    html_content = MIMEText(wedding_utils.get_email_html(), "html")
+
+    with st.expander("Show text content"):
+        st.code(text_content)
+
+    with st.expander("Show HTML content"):
+        st.code(html_content)
 
     if st.button("Send email"):
         with gmail_service(username, password) as service:
             mail = MIMEMultipart("alternative")
-            mail["Subject"] = "this is a test"
+            mail["Subject"] = subject
             mail["From"] = username
             mail["To"] = recipient
 
-            text_content = MIMEText(message, "plain")
-
-            # text_template = """
-            # Geekflare
-
-            # Hi {0},
-            # We are delighted announce that our website hits 10 Million views this month.
-            # """
-            # # html_template = """
-            # # <h1>Geekflare</h1>
-
-            # # <p>Hi {0},</p>
-            # # <p>We are delighted announce that our website hits <b>10 Million</b> views last month.</p>
-            # # """
-
-            # html_content = MIMEText(html_template.format(email.split("@")[0]), "html")
-
             mail.attach(text_content)
+            mail.attach(html_content)
 
-            # mail.attach(html_content)
+            # # text_template = """
+            # # Geekflare
+
+            # # Hi {0},
+            # # We are delighted announce that our website hits 10 Million views this month.
+            # # """
+            # # # html_template = """
+            # # # <h1>Geekflare</h1>
+
+            # # # <p>Hi {0},</p>
+            # # # <p>We are delighted announce that our website hits <b>10 Million</b> views last month.</p>
+            # # # """
 
             service.sendmail(username, recipient, mail.as_string())
-            st.success(f"Send mesage of len `{len(message)}` to `{recipient}`.")
 
-            # st.write(type(service))
-            # st.write(dir(service))
-            # st.help(service.sendmail)
+            total_content = len(text_content) + len(html_content)
+            st.success(f"Send mesage of len `{total_content}`b to `{recipient}`.")
 
     # mails = input("Enter emails: ").split()
     # subject = input("Enter subject: ")
@@ -93,4 +98,4 @@ def main():
 
 
 if __name__ == "__main__":
-    WeddingException.run_main(main)
+    wedding_utils.run_main(main)

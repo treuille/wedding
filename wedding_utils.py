@@ -17,14 +17,20 @@ _DEFAULT_STATE = {
     "image_file": "./adrien-regan-save-the-date.png",
     "image_format": "jpeg",
     "invite_text": _INVITE_TEXT,
+    "image_width": 1400,
+    "subject": "This is a test",
 }
 
 
 def init_session_state():
     """Initializes the session state with default values."""
+    with st.expander("Before init_session_state"):
+        st.json(st.session_state)
     for k, v in _DEFAULT_STATE.items():
         if k not in st.session_state:
             st.session_state[k] = v
+    with st.expander("After init_session_state"):
+        st.json(st.session_state)
 
 
 def run_main(func):
@@ -123,11 +129,15 @@ def get_email_html() -> str:
 
 @st.experimental_memo  # type: ignore
 def _get_image_base_64(
-    image_file, image_format: Literal["jpeg", "png"]
+    image_file, image_format: Literal["jpeg", "png"], desired_width: int
 ) -> Tuple[str, int, int]:
     """Gets the image data along with the image width and height."""
     # Open the image and convert it ot image_format
     im = Image.open(image_file).convert("RGB")
+
+    # Resize the image if need be
+
+    # Write the image data in the right format
     output = BytesIO()
     im.save(output, format=image_format)
     im_data = output.getvalue()
@@ -142,6 +152,8 @@ def _get_image_base_64(
 
 def get_img_data() -> Tuple[str, int, int]:
     """Returns data_url, width, height."""
+    desired_width = st.session_state.image_width
+
     return _get_image_base_64(
-        st.session_state.image_file, st.session_state.image_format
+        st.session_state.image_file, st.session_state.image_format, desired_width
     )
